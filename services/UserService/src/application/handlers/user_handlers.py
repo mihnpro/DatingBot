@@ -11,12 +11,14 @@ class UserHandlers:
     
     async def create_user(self, command: CreateUserCommand) -> User:
         """Handle create user command"""
-        # Check if user already exists
         existing_user = await self.user_repository.get_by_telegram_id(command.telegram_id)
         if existing_user:
             raise ValueError(f"User with telegram_id {command.telegram_id} already exists")
         
-        # Create user entity
+        existing_user_by_username = await self.user_repository.get_by_telegram_username(command.username)
+        if existing_user_by_username:
+            raise ValueError(f"User with username {command.username} already exists")
+
         user = User(
             telegram_id=command.telegram_id,
             username=command.username,
@@ -25,7 +27,6 @@ class UserHandlers:
             referral_by=command.referral_by
         )
         
-        # Save to repository
         return await self.user_repository.create(user)
     
     async def update_user(self, command: UpdateUserCommand) -> User:
