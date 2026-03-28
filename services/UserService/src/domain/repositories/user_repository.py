@@ -13,6 +13,12 @@ class UserRepository(ABC):
     async def get_by_telegram_id(self, telegram_id: int) -> Optional[User]:
         """Get user by Telegram ID"""
         pass
+
+    @abstractmethod
+    async def get_by_telegram_username(self, username: str) -> Optional[User]:
+        """Get user by Telegram username"""
+        pass
+
     
     @abstractmethod
     async def create(self, user: User) -> User:
