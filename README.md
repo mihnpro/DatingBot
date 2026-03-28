@@ -205,6 +205,7 @@ CREATE TABLE matches (
     user1_id BIGINT NOT NULL,
     user2_id BIGINT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) DEFAULT 'active', 
     conversation_started BOOLEAN DEFAULT FALSE,
     CONSTRAINT unique_match UNIQUE (user1_id, user2_id)
 );
