@@ -1,5 +1,7 @@
+version: '3.8'
 services:
   user-service:
+    container_name: user-service
     build:
       context: .
       dockerfile: Dockerfile
@@ -24,7 +26,7 @@ services:
       - .:/app
       - uv_cache:/root/.cache/uv
     networks:
-      - user-network
+      - dating-net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -61,6 +63,7 @@ services:
   #     - user-network
 
   postgres:
+    container_name: postgres
     image: postgres:15-alpine
     environment:
       - POSTGRES_DB=user_db
@@ -71,7 +74,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - user-network
+      - dating-net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U user -d user_db"]
       interval: 10s
@@ -79,26 +82,8 @@ services:
       retries: 5
       start_period: 10s
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: pgadmin
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@example.com
-      - PGADMIN_DEFAULT_PASSWORD=admin
-      - PGADMIN_CONFIG_SERVER_MODE=False
-      - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
-    ports:
-      - "5050:80"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    networks:
-      - user-network
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
-
   rabbitmq:
+    container_name: rabbitmq
     image: rabbitmq:3-management-alpine
     environment:
       - RABBITMQ_DEFAULT_USER=guest
@@ -109,7 +94,7 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
-      - user-network
+      - dating-net
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 30s
@@ -117,18 +102,38 @@ services:
       retries: 5
 
   redis:
+    container_name: redis
     image: redis:7-alpine
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
-      - user-network
+      - dating-net
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:latest
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+      - PGADMIN_CONFIG_SERVER_MODE=False
+      - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - dating-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   postgres_data:
@@ -138,5 +143,6 @@ volumes:
   pgadmin_data:
 
 networks:
-  user-network:
+  dating-net:
     driver: bridge
+    name: dating-net      
