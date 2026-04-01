@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  matching-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: matching-service
+    ports:
+      - "8002:8000"                 
+    environment:
+      - POSTGRES_DSN=postgresql+asyncpg://matching_user:matching_pass@postgres-matching:5432/matching_db
+      - REDIS_URL=redis://redis:6379/0
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - MATCH_TTL_SECONDS=86400
+      - LOG_LEVEL=INFO
+    depends_on:
+      - postgres-matching
+    networks:
+      - dating-net                   
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  postgres-matching:
+    image: postgres:15-alpine
+    container_name: postgres-matching
+    environment:
+      POSTGRES_DB: matching_db
+      POSTGRES_USER: matching_user
+      POSTGRES_PASSWORD: matching_pass
+    ports:
+      - "5434:5432"                
+    volumes:
+      - postgres_matching_data:/var/lib/postgresql/data
+    networks:
+      - dating-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U matching_user -d matching_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_matching_data:
+
+networks:
+  dating-net:
+    external: true                
