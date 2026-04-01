@@ -19,3 +19,8 @@ class MatchRepository(ABC):
     ) -> List[Match]:
         """Получить мэтчи пользователя с пагинацией"""
         pass
+
+    @abstractmethod
+    async def count_user_matches(self, user_id: int) -> int:
+        """Общее количество мэтчей пользователя"""
+        pass
