@@ -25,6 +25,6 @@ docker compose up
 
 # Or run locally
 uv venv
-source .venv/bin/activate
+  source .venv/bin/activate
 uv pip install -e .
 uvicorn src.main:app --reload
